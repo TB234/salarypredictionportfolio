@@ -20,7 +20,6 @@ from sklearn.model_selection import GridSearchCV
 
 from sklearn import tree
 from sklearn import metrics
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV
 
@@ -33,11 +32,11 @@ def upload_file_csv(file_link):
     return  pd.read_csv(file_link)
 
 def summary_stat(data):
-    
     #print ('Shape of data is {} ' .format(data.shape), end ='\n\n')
     print('Data has %d rows by %d columns' %(data.shape[0], data.shape[1]), end ='\n\n')
     print ('Data type', data.dtypes, sep = '\n')
     return data.describe(include = 'all')
+
 
 class summary_stats():
     def __init__(self, data):
@@ -68,10 +67,10 @@ def uniq_values_in_feature(data, feature):
         print('There are %s  unique values of %s' %(l, feature) )
         #[print(val, end = ',') for val in uniq_vals]
 
+
 def data_set_joiner(data_1, data_2, joiner, How):
     return data_1.join(data_2.set_index(joiner), on = joiner, how = How )
     #return pd.merge(data_1, data_2, on = 'jobId')
-
 
 
 def missing_vals(data):
@@ -93,7 +92,6 @@ def case_check(data):
                 print (i, '--->', 'Mixed case')
                 data[i] = data[i].str.upper()
                 print(i, ' converted to uppercase')
-
     print('')             
     return data
              
@@ -111,12 +109,12 @@ def drop_missing (data, target): #drop missing value and empty strings and zero 
     else:
         return data
 
-
+#checks for duplicates
 def check_dup(data):
     duplicates = sum(data.duplicated(keep = 'first') == True)
     print('%d duplicates found' %duplicates)
 
-
+#drops duplicates
 def drop_dup(data):
     duplicates = sum(data.duplicated() == True)
     print('\n', '%d duplicates found and removed' %duplicates)
@@ -126,7 +124,7 @@ def drop_dup(data):
     else:
         return data
 
-
+#drop features
 def drop_feature(data, feature):
     print(feature, ' dropped')
     return data.drop( axis=1, columns = feature)
@@ -139,32 +137,21 @@ def group(data, features, fillter = 0):
     else:   
         return grouped_data[grouped_data['salary'].apply(lambda x: len(x)> fillter)]
 
+
 def group_mean(data, features, target):
     grouped_data = data.groupby(features).mean().sort_values(target)
     if fillter == 0:   
         return grouped_data
-  
-
-def inpt_feat():
-    feat_list = []
-    t = True
-    while t:
-        feat_list.append(str(input('add your feature: ')))
-        f= str(input('Done?(y/n): '))
-        if f == 'y':
-            t = False
-        else:
-            t= True
-    return feat_list
 
 
-#show duplicated data on features set with corresponding target
 
+#show duplicated data on features set with thier corresponding target
 def dup_feat(data, target_col):
     print ('Number of duplicates found ---> ', sum(data.drop(columns = target_col).duplicated()== True))
     return data[data.drop(columns = target_col).duplicated()]
 
-#drops duplicates after excluding columns and merges back. will remove corresponding row in dropped columns
+
+#function drops duplicates after removing target_col, and then merges back target_col. It will remove rows in target_col corresponding to duplicate rows in features data only
 #target columns in string or list of strings
 def drop_dup1(data, target_col = None ):    
     if target_col == None:
@@ -174,7 +161,9 @@ def drop_dup1(data, target_col = None ):
         print ('Number of duplicates found ---> ', sum(data.drop(columns = target_col).duplicated()== True)) 
         return data[data.drop(columns = target_col).duplicated()== False] 
     
-#Choosing mean median mode of target for duplicated features
+
+
+#Fuction groups data using mean, median, mode of target for duplicated features
 # types in string
 def select_clean_met(data, feature_list, types):
     if types == 'mean':
@@ -186,16 +175,21 @@ def select_clean_met(data, feature_list, types):
     elif types== 'median':
         return data.groupby(feature_list).median().reset_index()
 
+
+#function bins values of features into specified groups
 def add_binned_feat(data, feature, num_bins, bin_labels, new_feat_name):
     data[new_feat_name] = pd.cut(data[feature], num_bins, labels = bin_labels ).astype('int64')
     print (feature, ' values binned')
     return data
+
 
 #feature_list should be a string or list of strings
 def drop_feats(data, feature_list):
     data.drop(columns = feature_list, inplace = True)
     return data
 
+
+#convert features from one type to another
 def conv_feat_type(data, feature, to_type ):
     for i in feature:
         if i.dtype != to_type:
@@ -205,13 +199,15 @@ def conv_feat_type(data, feature, to_type ):
             print(i, 'data type --->',  data[i].dtype)
     return data
 
-#need to import shuffle from sklearn.utils
+
+#Divides data into train and test split. Need to import shuffle from sklearn.utils
 def div_train_test(data, train_frac, seed):
     data = shuffle(data, random_state = seed)
     sample_train = data.sample(frac = train_frac, random_state = seed)
     sample_test = data.drop(sample_train.index)
     print ('data splitted into sample_train and sample_test')
     return sample_train, sample_test
+
 
 # aggregates targets after grouping to create new features
 def new_tar_feat(data, target):
@@ -223,9 +219,11 @@ def new_tar_feat(data, target):
     data['group_range']= data[target].apply(lambda x: np.ptp(x))
     return data
 
+
 #merger function
 def merger(base_data, merger_data, merg_on_feat, how= None):
     return base_data.merge(merger_data, on = merg_on_feat, how = how )
+
 
 #creating a pivot table and color map
 def color_map(data, pivot_row, pivot_column):
@@ -247,7 +245,8 @@ def color_map(data, pivot_row, pivot_column):
     plt.xticks(rotation=90)
 
 
-    fig1.colorbar(clr_map)
+    #fig1.colorbar(clr_map)
+
 
 #create pivot table
 def pivot_table(data, pivot_row, pivot_column, target):
@@ -260,7 +259,6 @@ def plot_feature_corr(data, feature1, feature2, target, order = 'y'):
     grouped_data = data[[feature1, feature2, target]].groupby([feature1, feature2], as_index = True).mean()
     grouped_data.reset_index(level = feature2, inplace = True)
 
-  
     fig = plt.figure(figsize = (10,10))
     ax = fig.add_axes([0,0,1,1])
     
@@ -286,10 +284,11 @@ def plot_feature_corr(data, feature1, feature2, target, order = 'y'):
                     color = 'C'+ str(counter), marker = 's', label=i )    
             counter += 1
             
-   
     ax.set_ylabel('Average Salary ')
     ax.set_xlabel(feature2)
     ax.legend(  loc = 'lower right',  )
+
+
 
 #plot a categorical feature value against target 
 def feat_val_graph(data, pivot_row, pivot_column, target, row_feat_val):
@@ -302,6 +301,7 @@ def feat_val_graph(data, pivot_row, pivot_column, target, row_feat_val):
     plt.ylabel( ylabel = 'Average' + ' ' + target.upper())
     plt.xlabel( xlabel = pivot_column.upper())
 
+
 #Plot bar graphs of features
 def feat_dist(data, feat_list):
     fig, ax = plt.subplots(len(feat_list),1, figsize = (20,20))
@@ -310,12 +310,16 @@ def feat_dist(data, feat_list):
         ax[cnt].bar(data[i].sort_values().unique(), data[i].value_counts().sort_index())
         cnt += 1
 
+
+
 #Plot box plots
 def feat_boxplot(data, feature, target):
     fig = plt.figure( figsize=(10,10))
     axs = fig.add_axes([0,0,1,1])
     sns.boxplot(x = feature, y = target, data =data, ax = axs)
 
+
+    
 #label encoder function
 #feature and enc_feat_name can be strings or list of strings 
 def lab_enc(data, feature, enc_feat_nam):
@@ -327,8 +331,9 @@ def lab_enc(data, feature, enc_feat_nam):
             cnt += 1
     elif type(feature) == str:
         data[enc_feat_nam] = le.fit_transform(data[feature])
-    
     return data
+
+
 
 #Ordinal encoder function
 #category_order_list could be a single list or list of multiple lists
@@ -340,11 +345,12 @@ def ord_enc(data, feature, cat_ord_lst, enc_feat_nam):
     elif type(feature) == list:
         data.reset_index(inplace = True)
         data.drop(axis = 1, columns= 'index', inplace = True )
-        data[enc_feat_nam] = pd.DataFrame(ord_encoder.fit_transform(data[feature]))
-       
+        data[enc_feat_nam] = pd.DataFrame(ord_encoder.fit_transform(data[feature]))   
     return data
 
-#Ordinal encoder function #2
+
+
+#Ordinal encoder function #2 for train data
 def cat_ord_enc(data, target, feature= None):
     if feature == None:
         feature = cat_feat_list(data, target)
@@ -363,22 +369,21 @@ def cat_ord_enc(data, target, feature= None):
             encoder_dict[i] = ord_encoder
             
         joblib.dump(encoder_dict, 'features_ordinal_econders')
-            
+
+    print('\n', 'Data encoded')        
     return data
 
 
+#ordinal encoder for test data
 def test_ord_enc(data):
-
     enc_dict = joblib.load('features_ordinal_econders')
-
     feature = cat_feat_list(data, None)
-
     for i in feature:
         data[i + '_cat'] = enc_dict[i].fit_transform(data[[i]]) + 1
-
     print('Data encoded')
-
     return data 
+
+
 
 # Function that assign numbers to the unique feature values and stores in dictionary 
 def num_assign(data, feature):
@@ -389,6 +394,7 @@ def num_assign(data, feature):
         map_val[unique_val[i]] = i
     return map_val
 
+
 #alternative to sklearn label or ordinal encoder
 def map_encod(data, feat, lis, enc_feat_nam):
     if type(feat) == str:
@@ -398,6 +404,8 @@ def map_encod(data, feat, lis, enc_feat_nam):
             data[enc_feat_nam[i]]= data[feat[i]].map(lis[i])
     return data
 
+
+#One hot encode function
 def one_hot_enc(data, feat):
     return pd.get_dummies(data, columns = feat, drop_first = True)
 
@@ -426,7 +434,7 @@ def cat_feat_list(data, target):
     return c
 
 
-# If user provides a separate test sample it is used, otherwise a portion of train sample is reserved for testing
+# Fuction determines train and test data split. If user provides a separate test sample it is used, otherwise a portion of train sample is reserved for testing
 def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
     
     #gets all numerical features from data if auto is used
@@ -448,7 +456,7 @@ def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
     return x_train, y_train, x_test, y_test
 
 
-
+#Feature importance plot
 def feature_importance(model, num_features):
     feature_importances = []
     pos = np.arange(len(num_features)) + .5
@@ -492,9 +500,6 @@ def poly_reg(train_sample,  target, order,  num_features = 'auto', test_sample =
 
         lrm.fit(x_train_pr, y_train)
 
-     
-
-
         yhat_train = lrm.predict(x_train_pr)
         yhat_test = lrm.predict(x_test_pr)
 
@@ -504,14 +509,11 @@ def poly_reg(train_sample,  target, order,  num_features = 'auto', test_sample =
     mse_train
     mse_test
 
-    fig, (ax2) = plt.subplots(1,1, figsize=(10,10))
-
-    
+    fig, (ax2) = plt.subplots(1,1, figsize=(10,10)) 
 
     ax2.plot(order, mse_train, color = 'red' , marker = '*', label = 'train' )
 
     ax2.plot(order, mse_test, color = 'green', marker = '*', label = 'test' )
-
 
     ax2.set_xlabel('Polynomial order')
     ax2.set_ylabel('MSE')
@@ -592,7 +594,6 @@ def xg_boost(train_sample,  target,  num_features = 'auto', test_sample = 'auto'
     
 #===================
 
-
 #Compares performance of 4 models- Decision Tree, Random Forest, Gradient boost, XGB
 def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 'auto'):
     
@@ -654,7 +655,7 @@ def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 
             return key
 
 
-#cleans processes raw train data and returns model for predicting
+#cleans, processes raw train data and returns model for predicting
 def combined_proc_modelling(train_features_link, train_target_link):
     
     train_features = upload_file_csv(train_features_link) #get train features
