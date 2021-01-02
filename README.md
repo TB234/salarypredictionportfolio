@@ -9,7 +9,7 @@ The task has been divided in to 5 steps(each completed in a separate file):
 4. Models_salary_pred.ipynb : Linear regression model was explored as a base model. A decision tree model and three ensemble models (random forest, gradient boosting and XGBoost) were further explored. The XGBoost model performed marginally better than the other ensemble methods and was selected as the final model. The models were tuned in a separte file using a grid search to select optimum parameters
 5. Deploy_salary_pred.ipynb: In this notebook, loading, cleaning, preprocessing the train data set and training of the selected model on the entire train data set is combined into a single function which outputs an object of the model that is then used to predict the salaries on the test data set. The result is then saved as csv file as requested.
 
-The helper.py file contains the functions created and called on at different steps
+The helper.py file in the module folder contains the functions created and called on at different steps
 
 Areas to Improve on:
 1. During EDA over 15000 rows were found with duplicate features but different salaries. This needs further analysis
