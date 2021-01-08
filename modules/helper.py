@@ -27,27 +27,35 @@ from sklearn.ensemble import GradientBoostingRegressor
 import xgboost 
 
 
+
+
 def upload_file_csv(file_link):
+    ''' Returns dataframe of a csv file with the input as the file's path'''
     #print(" Displaying nlot Snipet of Data")
     return  pd.read_csv(file_link)
 
 def summary_stat(data):
+    ''' returns basics stats of each column such as counts, mean, median, percentile in a table
+        Also returns the data type of each column and the shape of the data
+        Parameter:
+        data: Pandas dataframe'''
     #print ('Shape of data is {} ' .format(data.shape), end ='\n\n')
     print('Data has %d rows by %d columns' %(data.shape[0], data.shape[1]), end ='\n\n')
     print ('Data type', data.dtypes, sep = '\n')
     return data.describe(include = 'all')
 
 
-class summary_stats():
-    def __init__(self, data):
-        self.data = data
-        #print('Data has %d rows by %d columns' %(data.shape[0], data.shape[1])
-        print ('Shape of data is {} ' .format(data.shape), end ='\n\n')
-        print ('  Data type', data.dtypes, sep = '\n')
-
 
 def uniq_values_in_feature(data, feature):
-#accept feature as string or list of strings and drop feature if all values in features are unique 
+    '''Checks each column in dataframe and drops the columns if all its values are unique. Then prints out
+        number of unique values in each column. 
+
+       Parameters:
+       data: Pandas dataframe object
+       feature: list of column labels or a string
+
+       Returns data without dropped columns'''
+
     print("")
     x =[]
     if type(feature) == list:
@@ -68,17 +76,23 @@ def uniq_values_in_feature(data, feature):
         #[print(val, end = ',') for val in uniq_vals]
 
 
-def data_set_joiner(data_1, data_2, joiner, How):
-    return data_1.join(data_2.set_index(joiner), on = joiner, how = How )
-    #return pd.merge(data_1, data_2, on = 'jobId')
-
-
 def missing_vals(data):
+    ''' Prints out missing value in each column as a percents of the number of rows in input dataframe
+
+         parameters:
+         data: pandas dataframe object'''
+    
     print('Percent missing of total')
     print(data.isnull().sum()/len(data))
 
 
 def case_check(data):
+    '''Checks if the values in each column (object data type) have uniform case(upper or lower) and prints out the result
+       If values do not have uniform cases, all values are made upper cases  and the transformed data is returned
+
+       Parameters:
+       data: pandas dataframe object'''
+
     print('Checking if case in feature values are uniform')
     counter = data.shape[0]
     for i in data.columns:
@@ -97,7 +111,13 @@ def case_check(data):
              
 
 
-def drop_missing (data, target): #drop missing value and empty strings and zero target values
+def drop_missing (data, target):
+    ''' drop missing value, empty strings and zero values in the target column of the dataframe input and returns the result
+
+        parameters:
+        data: pandas dataframe
+        target(string): column label of dataframe to check for zero values '''
+    
     int_rows = data.shape[0]
     missing_vals(data)
     #print('Output After dropping missing values')
@@ -109,13 +129,23 @@ def drop_missing (data, target): #drop missing value and empty strings and zero 
     else:
         return data
 
-#checks for duplicates
+
 def check_dup(data):
+    ''' print number of duplicate rows in the input data
+
+        parameters:
+        data: pandas dataframe object'''
+    
     duplicates = sum(data.duplicated(keep = 'first') == True)
     print('%d duplicates found' %duplicates)
 
-#drops duplicates
+
 def drop_dup(data):
+    ''' drops duplicate rows and returns resulting dataframe
+
+        parameters:
+        data: pandas dataframe object'''
+    
     duplicates = sum(data.duplicated() == True)
     print('\n', '%d duplicates found and removed' %duplicates)
     if duplicates > 0:
@@ -124,13 +154,28 @@ def drop_dup(data):
     else:
         return data
 
-#drop features
+
+
 def drop_feature(data, feature):
+    ''' drops a column in dataframe and returns resulting dataframe
+
+        parameters:
+        data: pandas dataframe object
+        feature(list of strings or string): column label(s) to drop'''
+    
     print(feature, ' dropped')
     return data.drop( axis=1, columns = feature)
 
 
+
 def group(data, features, fillter = 0):
+    '''returns dataframe with values belonging to the same group aggregated in a list
+
+        Parameters:
+        data: pandas dataframe obnject
+        features(list of strings or a string): column label(s) of the input dataframe to group by
+        fillter(int): filter out groups with number of individuals greater than the fillter value '''
+    
     grouped_data = data.groupby(features).agg(list)
     if fillter == 0:   
         return grouped_data
@@ -147,13 +192,27 @@ def group_mean(data, features, target):
 
 #show duplicated data on features set with thier corresponding target
 def dup_feat(data, target_col):
+    ''' drops the target column and checks for duplicates in remaining data set
+        and returns the duplicates
+
+        parameters:
+        data: pandas dataframe object
+        target_col('string'): column label to drop'''
+    
     print ('Number of duplicates found ---> ', sum(data.drop(columns = target_col).duplicated()== True))
     return data[data.drop(columns = target_col).duplicated()]
 
 
-#function drops duplicates after removing target_col, and then merges back target_col. It will remove rows in target_col corresponding to duplicate rows in features data only
-#target columns in string or list of strings
-def drop_dup1(data, target_col = None ):    
+def drop_dup1(data, target_col = None ):
+    ''' Parameters:
+        data: pandas dataframe object
+        target_col(string): target label in dataframe
+
+        if target_col = None, the function returns dataframe after dropping duplicate rows
+        
+        if target col is provided, the  function stores non-duplicate row in the dataframe that results after droping the target_col in the original dataframe (call the result x)
+        It then uses the index of x to filter out the corresponding rows in original input dataframe and returns the result'''
+    
     if target_col == None:
         print ('Number of duplicates found ---> ', sum(data.duplicated() == True))
         return data.drop_duplicates()
@@ -163,34 +222,46 @@ def drop_dup1(data, target_col = None ):
     
 
 
-#Fuction groups data using mean, median, mode of target for duplicated features
-# types in string
-def select_clean_met(data, feature_list, types):
-    if types == 'mean':
-         return data.groupby(feature_list).mean().reset_index()
-    elif types == 'max':
-        return data.groupby(feature_list).max().reset_index()
-    elif types == 'min':
-        return data.groupby(feature_list).min().reset_index()
-    elif types== 'median':
-        return data.groupby(feature_list).median().reset_index()
-
-
 #function bins values of features into specified groups
 def add_binned_feat(data, feature, num_bins, bin_labels, new_feat_name):
+    '''categorizes feature with numeric values into groups
+
+        Parameters:
+        data: input pandas dataframe
+        feature(string): column label in dataframe whose numeric values will be binned
+        num_bins(integer): number of groups to create
+        bin_labels(list of integers): number assigned to each group
+        new_feat_name(string): name of new column to add to the input dataframe which will contain the corresponding group value of the feature value
+
+        retuns dataframe with the new column'''
+    
     data[new_feat_name] = pd.cut(data[feature], num_bins, labels = bin_labels ).astype('int64')
     print (feature, ' values binned')
     return data
 
 
-#feature_list should be a string or list of strings
+
 def drop_feats(data, feature_list):
+
+    '''drops feature(s) from a data frame and returns result
+
+        Parameters:
+        data: pandas dataframe object
+        feature_list(string or list of strings): column(s) to drop from dataframe'''
+    
     data.drop(columns = feature_list, inplace = True)
     return data
 
 
 #convert features from one type to another
 def conv_feat_type(data, feature, to_type ):
+    
+    '''Converts feature(s) values from one type to another(int, obj, etc)
+
+        Parameters:
+        data: Pandas dataframe object
+        feature(string or list of strings): Feature(s) in dataframe'''
+        
     for i in feature:
         if i.dtype != to_type:
             data[i] = data[i].astype(to_type)
@@ -200,34 +271,32 @@ def conv_feat_type(data, feature, to_type ):
     return data
 
 
-#Divides data into train and test split. Need to import shuffle from sklearn.utils
-def div_train_test(data, train_frac, seed):
-    data = shuffle(data, random_state = seed)
-    sample_train = data.sample(frac = train_frac, random_state = seed)
-    sample_test = data.drop(sample_train.index)
-    print ('data splitted into sample_train and sample_test')
-    return sample_train, sample_test
-
-
-# aggregates targets after grouping to create new features
-def new_tar_feat(data, target):
-    data['group_mean']= data[target].apply(lambda x: np.mean(x))
-    data['group_max']= data[target].apply(lambda x: np.max(x))
-    data['group_min']= data[target].apply(lambda x: np.min(x))
-    data['group_std']= data[target].apply(lambda x: np.std(x))
-    data['group_median']= data[target].apply(lambda x: np.median(x))
-    data['group_range']= data[target].apply(lambda x: np.ptp(x))
-    return data
-
-
 #merger function
 def merger(base_data, merger_data, merg_on_feat, how= None):
+
+    '''Joins two dataframe together and returns result. See 'merge' method documentation on pandas dataframe objecy
+
+        Parameters:
+        base_data: Dataframe object onto which second dataframe is joined to
+        merger_data: second dataframe which joins to first data_frame
+        on(label or list): column or index level names to join on. These must be found in both DataFrames.
+        how : {'left', 'right', 'outer', 'inner'}'''
+    
     return base_data.merge(merger_data, on = merg_on_feat, how = how )
 
 
-#creating a pivot table and color map
-def color_map(data, pivot_row, pivot_column):
-    group = data[[pivot_row, pivot_column, 'salary']]
+def color_map(data, pivot_row, pivot_column, target = 'salary'):
+
+    '''' returns a color map between two features for a target lable'
+
+        Parameters
+        data: Dataframe object
+        pivot_row(string): Feature in the y axis
+        pivot_column(string): Feature in the x axis
+        target(string): label in dataframe whose numerical values are colour coded in the color map'''
+
+    
+    group = data[[pivot_row, pivot_column, target]]
     group = group.groupby([pivot_row, pivot_column], as_index = False).mean()
 
     pivot_table = group.pivot(index = pivot_row, columns = pivot_column)
@@ -248,14 +317,20 @@ def color_map(data, pivot_row, pivot_column):
     #fig1.colorbar(clr_map)
 
 
-#create pivot table
-def pivot_table(data, pivot_row, pivot_column, target):
-    group = data[[pivot_row, pivot_column, target]].groupby([pivot_row, pivot_column], as_index = False).mean()
-    return group.pivot(index = pivot_row, columns = pivot_column).sort_values( data[pivot_row].unique()[0], axis = 1)
 
 
-#plot line graphs of feature against salary with an additional feature dimension as filter 
+ 
 def plot_feature_corr(data, feature1, feature2, target, order = 'y'):
+    
+    ''' Plots graphical representation between two categorical features and a numerical target
+
+        Parameters:
+        data: Dataframe objecy
+        feature1(string): First categorical feature
+        feature2(string): Second categorical feature
+        target(string): Numberical target
+        order('y' or 'n'): This orders the numerical target values('y) or not ('n') before ploting graph'''
+    
     grouped_data = data[[feature1, feature2, target]].groupby([feature1, feature2], as_index = True).mean()
     grouped_data.reset_index(level = feature2, inplace = True)
 
@@ -290,20 +365,14 @@ def plot_feature_corr(data, feature1, feature2, target, order = 'y'):
 
 
 
-#plot a categorical feature value against target 
-def feat_val_graph(data, pivot_row, pivot_column, target, row_feat_val):
-    table = pivot_table(data, pivot_row, pivot_column, target).loc[row_feat_val].reset_index()
-    table.drop('level_0', axis = 1, inplace = True)
-    table. rename(columns = {row_feat_val: target.upper()}, inplace = True)
-    plt.figure(figsize = (5,5))
-    plt.plot(table[pivot_column], table[target.upper()] )
-    plt.title(label = row_feat_val +' ' + pivot_row.upper() )
-    plt.ylabel( ylabel = 'Average' + ' ' + target.upper())
-    plt.xlabel( xlabel = pivot_column.upper())
-
-
-#Plot bar graphs of features
 def feat_dist(data, feat_list):
+
+    ''' Plots bar graphs of each feature. Show the distribution of values of features
+
+        Parameters:
+        data: Dataframe object
+        feat_list(string or list of strings): feature to plot'''
+    
     fig, ax = plt.subplots(len(feat_list),1, figsize = (20,20))
     cnt = 0
     for i in feat_list:
@@ -311,49 +380,20 @@ def feat_dist(data, feat_list):
         cnt += 1
 
 
-
-#Plot box plots
-def feat_boxplot(data, feature, target):
-    fig = plt.figure( figsize=(10,10))
-    axs = fig.add_axes([0,0,1,1])
-    sns.boxplot(x = feature, y = target, data =data, ax = axs)
-
-
-    
-#label encoder function
-#feature and enc_feat_name can be strings or list of strings 
-def lab_enc(data, feature, enc_feat_nam):
-    le = LabelEncoder()
-    if type(feature) == list:
-        cnt = 0  
-        for i in feature:
-            data[enc_feat_nam[cnt]] = le.fit_transform(data[i])
-            cnt += 1
-    elif type(feature) == str:
-        data[enc_feat_nam] = le.fit_transform(data[feature])
-    return data
-
-
-
-#Ordinal encoder function
-#category_order_list could be a single list or list of multiple lists
-#feature, enc_feat_nam could be string or list of strings
-def ord_enc(data, feature, cat_ord_lst, enc_feat_nam):
-    ord_encoder = OrdinalEncoder(categories = cat_ord_lst, dtype= 'int64')
-    if type(feature)== str:
-        data[enc_feat_nam]= ord_encoder.fit_transform(data[[feature]])
-    elif type(feature) == list:
-        data.reset_index(inplace = True)
-        data.drop(axis = 1, columns= 'index', inplace = True )
-        data[enc_feat_nam] = pd.DataFrame(ord_encoder.fit_transform(data[feature]))   
-    return data
-
-
-
 #Ordinal encoder function #2 for train data
 def cat_ord_enc(data, target, feature= None):
+
+    '''Ordinal Encoder: Encodes features values based on average corresponding target value and returns dataframe with additional columns containing the codes
+        saves ordinal_encoder object for each feature in a dictionary which can then be used to transform a test data set
+        
+        Parameters
+        data: Dataframe object
+        target(string): Numrical column use to encode features' values
+        feature(string or list of strings): features in dataframe to encoded '''
+    
     if feature == None:
         feature = cat_feat_list(data, target)
+        
     if type(feature)== str:
         ordered_data = data.groupby(feature).mean().sort_values(target).index.unique() 
         ord_encoder = OrdinalEncoder(categories = [ordered_data], dtype= 'int64')
@@ -376,6 +416,10 @@ def cat_ord_enc(data, target, feature= None):
 
 #ordinal encoder for test data
 def test_ord_enc(data):
+    '''Uses ordinal encoder objects from train data set to encode features on test data. Returns dataframe with new labels containing encoded feature values
+
+        Parameters:
+        data: test dataframe '''
     enc_dict = joblib.load('features_ordinal_econders')
     feature = cat_feat_list(data, None)
     for i in feature:
@@ -384,33 +428,14 @@ def test_ord_enc(data):
     return data 
 
 
-
-# Function that assign numbers to the unique feature values and stores in dictionary 
-def num_assign(data, feature):
-    map_val = {}
-    unique_val = data[feature].unique()
-    
-    for i in range(len(unique_val)):
-        map_val[unique_val[i]] = i
-    return map_val
-
-
-#alternative to sklearn label or ordinal encoder
-def map_encod(data, feat, lis, enc_feat_nam):
-    if type(feat) == str:
-        data[enc_feat_nam] = data[feat].map(lis)
-    elif type(feat) == list:
-        for i in range(len(feat)):
-            data[enc_feat_nam[i]]= data[feat[i]].map(lis[i])
-    return data
-
-
-#One hot encode function
-def one_hot_enc(data, feat):
-    return pd.get_dummies(data, columns = feat, drop_first = True)
-
 #function creates list of numerical features in dataframe
 def num_feat_list(data, target):
+    ''' return list of features whose values are numerical and also excludes the target in the dataframe
+
+        Parameters:
+        data: dataframe object
+        target(string): column label is not listed in returned list'''
+    
     c= []
     for feature in data.columns:
         if data[feature].dtype != object and feature != target :
@@ -419,6 +444,13 @@ def num_feat_list(data, target):
 
 #function creates list of features in dataframe
 def feat_list(data, target):
+
+    ''' return list of features in dataframe
+
+        Parameters:
+        data: dataframe object
+        target(string): target is not listed in returned list'''
+    
     c= []
     for feature in data.columns:
         if feature != target :
@@ -427,6 +459,13 @@ def feat_list(data, target):
 
 #function creates list of categorical features in dataframe
 def cat_feat_list(data, target):
+
+    ''' return list of categorical features and also excludes the target in the dataframe
+
+        Parameters:
+        data: dataframe object
+        target(string): column label is not listed in returned list'''
+    
     c= []
     for feature in data.columns:
         if data[feature].dtype == object and feature != target :
@@ -436,6 +475,14 @@ def cat_feat_list(data, target):
 
 # Fuction determines train and test data split. If user provides a separate test sample it is used, otherwise a portion of train sample is reserved for testing
 def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
+
+    '''Fuction determines train and test split. If user provides a separate test data, it is used, otherwise a portion of train data is taken out for testing
+       Returns 'x_train, y_train, x_test, y_test'. See Sklearn train_test_split module
+
+       Parameters
+       train_sample: train dataframe object
+       test_sample: test dataframe object(optional)
+       num_features: List of numerical features (optional)'''
     
     #gets all numerical features from data if auto is used
     if num_features == 'auto':
@@ -458,6 +505,13 @@ def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
 
 #Feature importance plot
 def feature_importance(model, num_features):
+    '''Plots relative importance of features for a machine learning model
+
+        Parameters:
+        model: A classifier or regressor object
+        num_features: List of featrues
+        '''
+    
     feature_importances = []
     pos = np.arange(len(num_features)) + .5
     importance_percentage = []
@@ -482,13 +536,23 @@ def feature_importance(model, num_features):
 
 def poly_reg(train_sample,  target, order,  num_features = 'auto', test_sample = 'auto'):
 
+    '''plots the mean squared error of multiple linear regression models on train and test data set
+
+        Parameters:
+        train_sample: train dataframe
+        target(string): target label
+        order(list of integers): the orders of the linear regression models
+        num_features(list of strings): features used to create the regression models(optiona). If not given it is automatically generated
+        test_sample: test dataframe(optional). If not given a portion of the train_data is reserved for testing'''
+    
+
     lrm = LinearRegression()
 
     #gets all numerical features from data if auto is used
     #if num_features == 'auto':
      #           num_features = num_feat_list(train_sample, target = target)
             
-    x_train, y_train, x_test, y_test = use_data(train_sample, target, test_sample = 'auto')
+    x_train, y_train, x_test, y_test = use_data(train_sample, target, test_sample, num_features)
 
   
     mse_train = []
@@ -523,85 +587,31 @@ def poly_reg(train_sample,  target, order,  num_features = 'auto', test_sample =
 
 
 
-#========================
-def xg_boost(train_sample,  target,  num_features = 'auto', test_sample = 'auto', estimator = None):
-    
-    if estimator == None:
 
-        xg_bst = xgboost.XGBRegressor(n_jobs = -1, random_state = 2, n_estimators = 100, max_depth = 8, min_child_weight= 8, 
-                           reg_lambda = 1, reg_alpha = 20, learning_rate = 0.09, base_score= 0.5, colsample_bytree = 0.8, subsample = 1)
-    else: 
-        xg_bst = estimator
-           
-    #gets all numerical features from data if auto is used
-    if num_features == 'auto':
-                num_features = num_feat_list(train_sample, target)
-
-    #trains on entire data if no test sample provided. Used to get final model        
-    if test_sample == None:
-        x_train = train_sample[ num_features ]
-        y_train = train_sample [target]
-        
-        xg_bst.fit(x_train, y_train)
-        yhat_train = xg_bst.predict(x_train)
-        train_mse = mean_squared_error(yhat_train, y_train)
-        print('\n', 'The mean squared error for entire train data ', train_mse)
-
-        feature_importance(xg_bst, num_features)
-        
-        model_file_name = 'final_xgb_model_saved'
-        joblib.dump(xg_bst, model_file_name )
-        print ('final xgb model saved as --->', model_file_name)
-        
-        return xg_bst
-        
-    #splits train sample for train and test or uses test sample provided        
-    else: 
-        
-        x_train, y_train, x_test, y_test = use_data(train_sample, test_sample, num_features )
-        
-        #commented because it takes long to run
-        #xgb_cross = cross_validate(xg_bst, x_train, y_train, n_jobs= -1, scoring = ('neg_mean_squared_error'), 
-                             # cv=5, return_train_score=True, return_estimator= False, verbose = 3)
-        #print('Cross validation scores:', '\n', rf_cross, )
-
-        xg_bst.fit(x_train, y_train)
-        
-        feature_importance(xg_bst, num_features)     
-
-        yhat_train = xg_bst.predict(x_train)
-        yhat_test = xg_bst.predict(x_test)
-        
-        train_mse = mean_squared_error(yhat_train, y_train)
-        mse = mean_squared_error(yhat_test, y_test)
-        
-        print('\n','The train mean squared error', train_mse)
-        print('The test mean squared error ', mse)
-        
-        fig = plt.figure()
-
-        ax1=  sns.distplot(y_test, hist= False, color = 'red', label= 'Actual')
-
-        sns.distplot(yhat_test, hist=False, color = 'blue', ax=ax1, label= 'Predicted')
-        
-        ax1.set_title(label = "TEST SAMPLE DISTRIBUTION")
-        
-        
-        joblib.dump(xg_bst, 'saved_xgb_model' )
-
-        
-        return xg_bst
-    
 #===================
 
 #Compares performance of 4 models- Decision Tree, Random Forest, Gradient boost, XGB
 def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 'auto'):
+
+    ''' Compares performance of 4 models- Decision Tree, Random Forest, Gradient boost, XGBoost
+        Prints out cross validation score for each model
+        Prints out the mse for each model
+        save an object of the model with the best mse as 'saved_best_model'
+        and graphs the feature importance of the best model
+        Returns an object of the best model
+
+        Parameters:
+        train_sample: train dataframe
+        target(string): target label
+        num_features(list of strings): features used to train models(optional). If not given it is automatically generated
+        test_sample: test dataframe(optional). If not given a portion of the train_data is reserved for testing'''
+    
     
     #gets all numerical features from data if auto is used
     if num_features == 'auto':
                 num_features = num_feat_list(train_sample, target)
             
-    x_train, y_train, x_test, y_test = use_data(train_sample, target, test_sample = 'auto')
+    x_train, y_train, x_test, y_test = use_data(train_sample, target, num_features, test_sample )
 
 #models
     dt = tree.DecisionTreeRegressor(max_depth= 30, max_features = 'auto', 
@@ -654,9 +664,95 @@ def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 
             
             return key
 
+#========================
+def xg_boost(train_sample,  target,  num_features = 'auto', test_sample = 'auto', estimator = None):
+
+    '''Extreme gradient boost regressor model. Trains on enitre train set when test_sample is set to 'None' and return model for production
+
+    Parameters:
+        train_sample: train dataframe
+        target(string): target label
+        num_features(list of strings): features used to train models(optional). If not given it is automatically generated
+        test_sample: test dataframe(optional). If not given a portion of the train_data is reserved for testing. To train model on entire train data set test_sample== None
+        estimator: extreme gradient boost object to train data. If none is provided, a default is used'''
+    
+    
+    if estimator == None:
+
+        xg_bst = xgboost.XGBRegressor(n_jobs = -1, random_state = 2, n_estimators = 100, max_depth = 8, min_child_weight= 8, 
+                           reg_lambda = 1, reg_alpha = 20, learning_rate = 0.09, base_score= 0.5, colsample_bytree = 0.8, subsample = 1)
+    else: 
+        xg_bst = estimator
+           
+    #gets all numerical features from data if auto is used
+    if num_features == 'auto':
+                num_features = num_feat_list(train_sample, target)
+
+    #trains on entire data set to get final model        
+    if test_sample == None:
+        x_train = train_sample[ num_features ]
+        y_train = train_sample [target]
+        
+        xg_bst.fit(x_train, y_train)
+        yhat_train = xg_bst.predict(x_train)
+        train_mse = mean_squared_error(yhat_train, y_train)
+        print('\n', 'The mean squared error for entire train data ', train_mse)
+
+        feature_importance(xg_bst, num_features)
+        
+        model_file_name = 'final_xgb_model_saved'
+        joblib.dump(xg_bst, model_file_name )
+        print ('final xgb model saved as --->', model_file_name)
+        
+        return xg_bst
+        
+    #splits train sample for train and test or uses test sample provided        
+    else: 
+        
+        x_train, y_train, x_test, y_test = use_data(train_sample, target, test_sample, num_features )
+        
+        #commented because it takes long to run
+        #xgb_cross = cross_validate(xg_bst, x_train, y_train, n_jobs= -1, scoring = ('neg_mean_squared_error'), 
+                             # cv=5, return_train_score=True, return_estimator= False, verbose = 3)
+        #print('Cross validation scores:', '\n', rf_cross, )
+
+        xg_bst.fit(x_train, y_train)
+        
+        feature_importance(xg_bst, num_features)     
+
+        yhat_train = xg_bst.predict(x_train)
+        yhat_test = xg_bst.predict(x_test)
+        
+        train_mse = mean_squared_error(yhat_train, y_train)
+        mse = mean_squared_error(yhat_test, y_test)
+        
+        print('\n','The train mean squared error', train_mse)
+        print('The test mean squared error ', mse)
+        
+        fig = plt.figure()
+
+        ax1=  sns.distplot(y_test, hist= False, color = 'red', label= 'Actual')
+
+        sns.distplot(yhat_test, hist=False, color = 'blue', ax=ax1, label= 'Predicted')
+        
+        ax1.set_title(label = "TEST SAMPLE DISTRIBUTION")
+        
+        
+        joblib.dump(xg_bst, 'saved_xgb_model' )
+
+        
+        return xg_bst
+#================
 
 #cleans, processes raw train data and returns model for predicting
 def combined_proc_modelling(train_features_link, train_target_link):
+
+    ''' Function automates loading, cleaning, prepocessing of train data, then the training of entire train data on xgb model and returns trained model
+        which is saved for test data prediction
+
+        Parameters:
+        train_feature_link(string): file path of train features data
+        train_target_link(string): file path of train target data '''
     
     train_features = upload_file_csv(train_features_link) #get train features
     train_target = upload_file_csv(train_target_link)     #get train target
@@ -677,6 +773,8 @@ def combined_proc_modelling(train_features_link, train_target_link):
     
     # trains entire processed data using xtreme gradeint boost algorithm to create final model that is saved   
     final_model = xg_boost(a,  'salary',  num_features = 'auto', test_sample = None, estimator = None) 
+
+    joblib.dump(final_model, 'final_xgb_model_saved')
     
     return final_model
 
@@ -693,8 +791,13 @@ def model_predict(data, model):
     return np.rint(y_pred)
 
 
-#clean and process data, predicts target and exports data with predictions as csv file
+#clean and process test data, predicts target and exports data with predictions as csv file
 def process_predict_pipe(test_features_link):
+
+    ''' Function automates loading, cleaning, prepocessing of test data, predicts target using saved machine learning model which is saved as a csv file
+
+        Parameters:
+        test_feature_link(string): file path of test data '''
     
     x = upload_file_csv(test_features_link)
     
