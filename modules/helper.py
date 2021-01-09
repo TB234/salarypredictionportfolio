@@ -24,7 +24,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV
 
 from sklearn.ensemble import GradientBoostingRegressor
-import xgboost 
+import xgboost
 
 
 
