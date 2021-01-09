@@ -73,6 +73,7 @@ During EDA we talked about duplicate feature values with different salaries(arou
 
 ## 5. Deploy (file: 5_Deploy_salary_pred.ipynb)
 A script was written which automates the cleaning, prepocessing and modelling of the train data. With the train feature file path and the target file path as its input argument, the function converts the data set into pandas dataframes, cleans the data, checks for missing values and removes them, check for case uniformity and corrects if non-uniformity is detected, merges the feature and target data on the the jobId column, drops the jobId column, then removes duplicates and rows with zero salary values. The values of each feature are then ordinally encoded and captured in new columns added to the dataframe, and the encoder objects are saved in a dictionary. The entire data is then trained on the xgboost model and an object of the model is saved.
+
 A second script which takes the file path of the test data set as it input argument was aslo written. The function converts the test data csv file into a pandas dataframe, checks for case uniformity and corrects if necessary, and then removes duplicates after droping the jobId column. Using the saved ordinal encoder objects, values of each feature are encoded in new columns and the saved xgboost model is then use to predict the salaries of the test data. The predicted salaries are added to test dataframe which is saved as a csv file, a snip of which is shown below.
 
 ![predicted_salary_csv](./images/predicted_salary.PNG)
