@@ -474,7 +474,7 @@ def cat_feat_list(data, target):
 
 
 # Fuction determines train and test data split. If user provides a separate test sample it is used, otherwise a portion of train sample is reserved for testing
-def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
+def use_data(train_sample, target,  num_features = 'auto', test_sample = 'auto'):
 
     '''Fuction determines train and test split. If user provides a separate test data, it is used, otherwise a portion of train data is taken out for testing
        Returns 'x_train, y_train, x_test, y_test'. See Sklearn train_test_split module
@@ -484,9 +484,10 @@ def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
        test_sample: test dataframe object(optional)
        num_features: List of numerical features (optional)'''
     
-    #gets all numerical features from data if auto is used
+    #gets all numerical features from data if auto is used. Otherwise uses the numerical features passed
     if num_features == 'auto':
                 num_features = num_feat_list(train_sample, target)
+    else: num_features == num_features
     
     #Check
     if type(test_sample) == str:
@@ -494,11 +495,16 @@ def use_data(train_sample, target, test_sample = 'auto', num_features = 'auto'):
         y = train_sample [target]
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.20, random_state = 1)
 
+
+
+
+
+
     else:
-        x_train = train_sample[ num_features ]
-        y_train = train_sample [target]
-        x_test = test_sample[num_features]
-        y_test = test_sample[target]
+         x_train = train_sample[num_features]
+         y_train = train_sample [target]
+         x_test = test_sample[num_features]
+         y_test = test_sample[target]
         
     return x_train, y_train, x_test, y_test
 
@@ -607,9 +613,9 @@ def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 
         test_sample: test dataframe(optional). If not given a portion of the train_data is reserved for testing'''
     
     
-    #gets all numerical features from data if auto is used
+    '''#gets all numerical features from data if auto is used
     if num_features == 'auto':
-                num_features = num_feat_list(train_sample, target)
+                num_features = num_feat_list(train_sample, target)'''
             
     x_train, y_train, x_test, y_test = use_data(train_sample, target, num_features, test_sample )
 
