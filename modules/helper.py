@@ -613,9 +613,9 @@ def best_model_mse(train_sample,  target,  num_features = 'auto', test_sample = 
         test_sample: test dataframe(optional). If not given a portion of the train_data is reserved for testing'''
     
     
-    '''#gets all numerical features from data if auto is used
+    #gets all numerical features from data if auto is used
     if num_features == 'auto':
-                num_features = num_feat_list(train_sample, target)'''
+                num_features = num_feat_list(train_sample, target)
             
     x_train, y_train, x_test, y_test = use_data(train_sample, target, num_features, test_sample )
 
