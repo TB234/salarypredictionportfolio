@@ -1,6 +1,8 @@
 # Salary Prediction Project
 
 ## Introduction
+A data science consulting firm is working on a new project to develop a model that examines a set of job postings with salaries and predicts the salaries for a new set of job postings.
+
 Data on job postings are provided in a csv file. Each job posting has a unique identifier(jobId) and information provided for each job include jobtype, degree, major, industry, years of experience and distance from metropolis. Another csv file provided contains the salary of each job posting. The task is to examine this data set and use it to build a model that predicts the salary on a different job postings data set. The model is required to have a mean squared error (MSE) value less than 360 
 
 The task has been divided in to 5 steps(each completed in a separate file):
