@@ -1,3 +1,5 @@
+#helper is group of function created to make coding modular
+
 import pandas as pd
 import numpy as np
 import joblib
@@ -495,11 +497,6 @@ def use_data(train_sample, target,  num_features = 'auto', test_sample = 'auto')
         y = train_sample [target]
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.20, random_state = 1)
 
-
-
-
-
-
     else:
          x_train = train_sample[num_features]
          y_train = train_sample [target]
@@ -590,8 +587,6 @@ def poly_reg(train_sample,  target, order,  num_features = 'auto', test_sample =
     ax2.legend(loc= 'lower left')
 
     plt.show
-
-
 
 
 #===================
