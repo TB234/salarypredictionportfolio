@@ -1,7 +1,8 @@
 #helper is group of function created to make coding modular
 
+import sys
 import pandas as pd
-import numpy as np
+#import numpy as np
 import joblib
 
 import matplotlib.pyplot as plt
@@ -789,7 +790,8 @@ def model_predict(data, model):
     
     y_pred = model.predict(x_pred)
     
-    return np.rint(y_pred)
+    return print(y_pred)
+    #return print(int(np.round(y_pred[0]*1000, -1)))
 
 
 #clean and process test data, predicts target and exports data with predictions as csv file
@@ -823,3 +825,35 @@ def process_predict_pipe(test_features_link):
     print('Predictions saved as csv to ---> ', output_file )
     
     return x
+
+
+#function for prediction in web_app
+
+def predict(to_predict_):
+
+    #convert to pandas dataframe
+    input_table = pd.DataFrame(to_predict_list, index = [1]) 
+
+    #cast to numeric
+    input_table = input_table.astype({'milesFromMetropolis': 'int64'})
+    input_table = input_table.astype({'yearsExperience' : 'int64'})
+
+    #encode inputs
+    input_table = test_ord_enc(input_table)
+
+    #bin years of experience and distance from metro
+    input_table = add_binned_feat(input_table, 'yearsExperience', 6, [1,2,3,4,5,6], 'yearsExp_cat') #bins years experience and milesfromMetropolis feautures
+    #order of range reversed because average salary inversly propotional to milesFromMetropolis
+    input_table = add_binned_feat(input_table, 'milesFromMetropolis', 10, [i for i in range(10,0,-1)], 'mfm_cat') 
+
+    model = joblib.load('final_xgb_model_saved')
+
+    num_features = num_feat_list(input_table, 'salary')
+
+    x_pred = input_table[ num_features ]
+
+    y_pred = model.predict(x_pred)
+
+    return print(int(np.round(y_pred[0]*1000, -1)))
+
+        
